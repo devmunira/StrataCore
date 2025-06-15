@@ -7,7 +7,10 @@
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "db:migration": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "config": "^4.0.0",
@@ -29,6 +32,8 @@
     "@types/mongoose": "^5.11.97",
     "@types/node": "^22.14.1",
     "@types/pg": "^8.15.4",
+    "drizzle-kit": "^0.31.1",
+    "drizzle-zod": "^0.8.2",
     "eslint": "^9.25.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",

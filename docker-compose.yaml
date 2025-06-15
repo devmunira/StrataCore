@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: demo_app
+      POSTGRES_DB: framework
     ports:
       - '5433:5432'
     volumes:
@@ -23,8 +23,8 @@ services:
     image: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=test
-      - MYSQL_USER=munira
+      - MYSQL_DATABASE=framework
+      - MYSQL_USER=root
       - MYSQL_PASSWORD=password
     volumes:
       - mysqlData:/var/lib/mysql

@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
-import * as postgresSchema from '@/db/schemas/postgres/schemas';
+import * as postgresSchema from '@/db/schemas/postgresql/schemas';
 import * as mysqlSchema from '@/db/schemas/mysql/schemas';
 import { drizzle as MysqlDrizzle } from 'drizzle-orm/mysql2';
 import { Pool } from 'pg';
@@ -29,7 +29,7 @@ export interface IDatabaseClient {
 // Available Database Driver on System
 export enum DatabaseDriver {
   MYSQL = 'mysql',
-  POSTGRESQL = 'postgres',
+  POSTGRESQL = 'postgresql',
 }
 
 // Database Configurations

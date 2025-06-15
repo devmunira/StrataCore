@@ -7,7 +7,7 @@ import {
 } from '@/libs/database/IDatabaseClient.interface';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from '@/db/schemas/postgres/schemas';
+import * as schema from '@/db/schemas/postgresql/schemas';
 import { AppConfig } from '@/config/app.config';
 
 export class PostgresDriver implements IDatabaseDriver {

@@ -1,5 +1,3 @@
-// AppConfig.ts
-
 import {
   DatabaseConfig,
   DatabaseDriver,
