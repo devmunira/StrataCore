@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as postgresSchema from '@/db/schemas/postgres/schemas';
-import * as mysqlSchema from '@/db/schemas/postgres/schemas';
+import * as mysqlSchema from '@/db/schemas/mysql/schemas';
 import { drizzle as MysqlDrizzle } from 'drizzle-orm/mysql2';
 import { Pool } from 'pg';
 import type { Pool as MysqlPool } from 'mysql2/promise';
@@ -28,8 +28,8 @@ export interface IDatabaseClient {
 
 // Available Database Driver on System
 export enum DatabaseDriver {
-  MYSQL,
-  POSTGRESQL,
+  MYSQL = 'mysql',
+  POSTGRESQL = 'postgres',
 }
 
 // Database Configurations
@@ -45,6 +45,6 @@ export type DatabaseConfig = {
 
 // Create interface for Database driver
 export interface IDatabaseDriver {
-  createPool(): Pool | Promise<MysqlPool>;
+  createPool(): Promise<Pool | MysqlPool>;
   createDrizzle(): DrizzleClient;
 }

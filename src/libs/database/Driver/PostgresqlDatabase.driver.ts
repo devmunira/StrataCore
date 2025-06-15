@@ -11,11 +11,13 @@ import * as schema from '@/db/schemas/postgres/schemas';
 import { AppConfig } from '@/config/app.config';
 
 export class PostgresDriver implements IDatabaseDriver {
-  private connectionPool: any;
+  private connectionPool?: Pool;
   private readonly config: DatabaseConfig = AppConfig.getInstance().database;
 
-  async createPool() {
-    this.connectionPool = new Pool({
+  async createPool(): Promise<Pool> {
+    if (this.connectionPool) return this.connectionPool;
+
+    const pool = new Pool({
       connectionString: this.config.url,
       max: this.config.maxConnection,
       idleTimeoutMillis: this.config.idleTimeout,
@@ -23,10 +25,15 @@ export class PostgresDriver implements IDatabaseDriver {
       maxUses: this.config.maxUses,
       ssl: this.config.ssl,
     });
+
+    this.connectionPool = pool;
     return this.connectionPool;
   }
 
   createDrizzle(): PostgresDrizzleClient {
+    if (!this.connectionPool) {
+      throw new Error('Pool not initialized. Call createPool() first.');
+    }
     return drizzle({ client: this.connectionPool, schema });
   }
 }

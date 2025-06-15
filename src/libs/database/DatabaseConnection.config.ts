@@ -1,30 +1,51 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
 import {
   DatabaseConfig,
+  DatabaseDriver,
   DrizzleClient,
   IDatabaseClient,
   IDatabaseDriver,
 } from './IDatabaseClient.interface';
 import { Pool } from 'pg';
 import { AppConfig } from '@/config/app.config';
+import { Pool as MysqlPool } from 'mysql2/promise';
 
 export class DatabaseConnectionPool implements IDatabaseClient {
   private connected = false;
+  private config: DatabaseConfig = AppConfig.getInstance().database;
+  private pool?: Pool | MysqlPool;
   constructor(private databaseDriver: IDatabaseDriver) {}
 
   async connect() {
     if (this.connected) return;
 
-    (this.databaseDriver.createPool() as Pool).connect();
+    try {
+      if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+        this.pool = (await this.databaseDriver.createPool()) as Pool;
+      } else {
+        this.pool = (await this.databaseDriver.createPool()) as MysqlPool;
+        const conn = await this.pool.getConnection();
+        conn.release();
+      }
 
-    this.connected = true;
-    console.log('Database Connected');
+      this.connected = true;
+      console.log(
+        `✅ ${this.config.driver.toLocaleUpperCase()} Database Connected`,
+      );
+    } catch (err) {
+      console.error('Database connection failed:', err);
+      throw err;
+    }
   }
 
   async disconnect() {
-    if (!this.connected) return;
+    if (!this.connected || !this.pool) return;
 
-    await this.pool.end();
+    if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+      await (this.pool as Pool).end();
+    } else {
+      await (this.pool as MysqlPool).end();
+    }
+
     this.connected = false;
     console.log('Database disconnected');
   }
