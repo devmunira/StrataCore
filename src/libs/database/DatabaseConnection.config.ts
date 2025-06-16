@@ -8,18 +8,21 @@ import {
 import { Pool } from 'pg';
 import { AppConfig } from '@/config/app.config';
 import { Pool as MysqlPool } from 'mysql2/promise';
+import { PostgresDriver } from './Driver/PostgresqlDatabase.driver';
+import { MySQLDriver } from './Driver/MysqlDatabase.driver';
 
 export class DatabaseConnectionPool implements IDatabaseClient {
   private connected = false;
   private config: DatabaseConfig = AppConfig.getInstance().database;
   private pool?: Pool | MysqlPool;
-  constructor(private databaseDriver: IDatabaseDriver) {}
+  private databaseDriver: IDatabaseDriver = new MySQLDriver();
 
   async connect() {
     if (this.connected) return;
 
     try {
       if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+        this.databaseDriver = new PostgresDriver();
         this.pool = (await this.databaseDriver.createPool()) as Pool;
       } else {
         this.pool = (await this.databaseDriver.createPool()) as MysqlPool;
@@ -39,13 +42,11 @@ export class DatabaseConnectionPool implements IDatabaseClient {
 
   async disconnect() {
     if (!this.connected || !this.pool) return;
-
     if (this.config.driver === DatabaseDriver.POSTGRESQL) {
       await (this.pool as Pool).end();
     } else {
       await (this.pool as MysqlPool).end();
     }
-
     this.connected = false;
     console.log('Database disconnected');
   }
@@ -55,6 +56,9 @@ export class DatabaseConnectionPool implements IDatabaseClient {
   }
 
   getClient(): DrizzleClient {
+    if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+      this.databaseDriver = new PostgresDriver();
+    }
     return this.databaseDriver.createDrizzle();
   }
 

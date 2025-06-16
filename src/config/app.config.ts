@@ -5,6 +5,12 @@ import {
 
 interface IAppConfig {
   database: DatabaseConfig;
+  fileLogger: FileLoggerOptions;
+}
+
+export interface FileLoggerOptions {
+  retentionDays?: number;
+  zipInsteadOfDelete?: boolean;
 }
 
 export class AppConfig {
@@ -39,6 +45,13 @@ export class AppConfig {
           'DATABASE_DRIVER',
         ) as unknown as DatabaseDriver,
       },
+      fileLogger: {
+        retentionDays: this.parseIntEnv('FILE_LOG_RETENTION_DAYS', 7),
+        zipInsteadOfDelete: this.parseBooleanEnv(
+          'FILE_LOG_ZIP_INSTEAD_DELETE',
+          true,
+        ),
+      },
     };
   }
 
@@ -71,5 +84,9 @@ export class AppConfig {
 
   get database(): DatabaseConfig {
     return this.options.database;
+  }
+
+  get fileLogger(): FileLoggerOptions {
+    return this.options.fileLogger;
   }
 }
