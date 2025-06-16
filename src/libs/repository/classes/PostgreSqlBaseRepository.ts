@@ -7,7 +7,7 @@ import {
 } from '../interfaces/IBaseRepository';
 import { IPgDatabaseClient } from '@/libs/database/IDatabaseClient.interface';
 
-type TableWithId<T extends PgTable<TableConfig>> = T & {
+export type TableWithId<T extends PgTable<TableConfig>> = T & {
   id: PgColumn;
   $inferSelect: any;
   $inferInsert: any;

@@ -10,7 +10,7 @@ import {
   MysqlDrizzleClient,
 } from '@/libs/database/IDatabaseClient.interface';
 
-type TableWithId<T extends MySqlTable<TableConfig>> = T & {
+export type TableWithId<T extends MySqlTable<TableConfig>> = T & {
   id: MySqlColumn;
   $inferSelect: any;
   $inferInsert: any;
