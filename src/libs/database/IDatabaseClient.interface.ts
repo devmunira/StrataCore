@@ -26,6 +26,28 @@ export interface IDatabaseClient {
   ): Promise<T>;
 }
 
+export interface IPgDatabaseClient {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  getClient(): PostgresDrizzleClient;
+  isConnected(): boolean;
+  executeQuery<T>(
+    logLevel: string,
+    queryFunc: (db: PostgresDrizzleClient) => Promise<T>,
+  ): Promise<T>;
+}
+
+export interface IMyDatabaseClient {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  getClient(): MysqlDrizzleClient;
+  isConnected(): boolean;
+  executeQuery<T>(
+    logLevel: string,
+    queryFunc: (db: MysqlDrizzleClient) => Promise<T>,
+  ): Promise<T>;
+}
+
 // Available Database Driver on System
 export enum DatabaseDriver {
   MYSQL = 'mysql',
