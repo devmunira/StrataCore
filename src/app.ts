@@ -1,16 +1,25 @@
-import express, { Request, Response } from 'express';
-import dotenv from 'dotenv';
+import express from 'express';
+import { registerControllers } from './libs/decorator/auth.decorator';
 
-dotenv.config();
+export const createApp = () => {
+  const app = express();
+  // Middleware
+  app.use(express.json());
 
-const app = express();
+  registerControllers(app, []);
 
-app.use([express.json()]);
+  // Error handling middleware
+  app.use(
+    (
+      err: Error,
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      console.error(err.stack);
+      res.status(500).json({ message: 'Something went wrong!' });
+    },
+  );
 
-app.get('/health', (_req: Request, res: Response) => {
-  res.send('API health is ok');
-});
-
-// Routes here
-
-export default app;
+  return app;
+};
