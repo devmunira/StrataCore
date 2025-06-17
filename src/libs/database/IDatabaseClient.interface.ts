@@ -13,6 +13,7 @@ export type MysqlDrizzleClient = ReturnType<
 >;
 
 export type DrizzleClient = MysqlDrizzleClient | PostgresDrizzleClient;
+export const DatabaseClientToken = Symbol('DatabaseClientToken');
 
 // Need an interface for database connection
 export interface IDatabaseClient {
@@ -23,28 +24,6 @@ export interface IDatabaseClient {
   executeQuery<T>(
     logLevel: string,
     queryFunc: (db: DrizzleClient) => Promise<T>,
-  ): Promise<T>;
-}
-
-export interface IPgDatabaseClient {
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  getClient(): PostgresDrizzleClient;
-  isConnected(): boolean;
-  executeQuery<T>(
-    logLevel: string,
-    queryFunc: (db: PostgresDrizzleClient) => Promise<T>,
-  ): Promise<T>;
-}
-
-export interface IMyDatabaseClient {
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  getClient(): MysqlDrizzleClient;
-  isConnected(): boolean;
-  executeQuery<T>(
-    logLevel: string,
-    queryFunc: (db: MysqlDrizzleClient) => Promise<T>,
   ): Promise<T>;
 }
 

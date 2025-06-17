@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 export function TryCatch() {
   return function (
     target: any,
@@ -7,7 +9,7 @@ export function TryCatch() {
     const originalMethod = descriptor.value;
     descriptor.value = async function (...args: any[]) {
       try {
-        return await originalMethod.apply(...args);
+        return await originalMethod.apply(this, args);
       } catch (error) {
         console.error(
           `Caught error on ${target.name} in ${propertyKey.toString()}:`,

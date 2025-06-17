@@ -1,37 +1,34 @@
-import { MySqlColumn, MySqlTable, TableConfig } from 'drizzle-orm/mysql-core';
+import { PgTable } from 'drizzle-orm/pg-core';
 import { asc, desc, eq, inArray, sql, SQLWrapper } from 'drizzle-orm';
 import {
   FindOptionsSQL,
+  IBaseRepository,
   ID,
-  IMyBaseRepository,
 } from '../interfaces/IBaseRepository';
 import {
-  IMyDatabaseClient,
-  MysqlDrizzleClient,
+  DatabaseConfig,
+  IDatabaseClient,
 } from '@/libs/database/IDatabaseClient.interface';
+import { MySqlTable } from 'drizzle-orm/mysql-core';
+import { AppConfig } from '@/config/app.config';
 
-export type TableWithId<T extends MySqlTable<TableConfig>> = T & {
-  id: MySqlColumn;
-  $inferSelect: any;
-  $inferInsert: any;
-  _: { name: string; columns: Record<string, any> };
-  $dynamic(): any;
-  $select(): any;
-  $returning(): any;
-};
-
-export abstract class MySqlBaseRepository<
-  TTable extends TableWithId<MySqlTable<TableConfig>>,
-> implements IMyBaseRepository<TTable>
+export abstract class BaseRepository<
+  TTable extends (PgTable | MySqlTable) & { id: SQLWrapper },
+> implements IBaseRepository<TTable>
 {
+  private config: DatabaseConfig = AppConfig.getInstance().database;
+
   constructor(
-    protected readonly db: IMyDatabaseClient,
-    protected readonly table: TTable,
+    protected db: IDatabaseClient,
+    protected table: TTable,
   ) {}
 
   async findAll(options?: FindOptionsSQL): Promise<TTable['$inferSelect'][]> {
     const result = await this.db.executeQuery('FindAll', async (db) => {
-      let query = db.select().from(this.table).$dynamic();
+      let query = db
+        .select()
+        .from(this.table as any)
+        .$dynamic();
 
       if (options?.where) {
         query = query.where(options.where.getSQL());
@@ -52,8 +49,7 @@ export abstract class MySqlBaseRepository<
         query = query.offset(options.offset);
       }
 
-      const records = await query.execute();
-      return records;
+      return (await query.execute()) as TTable['$inferSelect'][];
     });
 
     return result;
@@ -61,11 +57,11 @@ export abstract class MySqlBaseRepository<
 
   async findById(id: ID): Promise<TTable['$inferSelect'] | null> {
     const result = await this.db.executeQuery('FindById', async (db) => {
-      const records = await db
+      const records = (await db
         .select()
-        .from(this.table)
+        .from(this.table as any)
         .where(eq(this.table.id, id))
-        .execute();
+        .execute()) as TTable['$inferSelect'][];
 
       return records[0] ?? null;
     });
@@ -75,11 +71,11 @@ export abstract class MySqlBaseRepository<
 
   async findOne(where: SQLWrapper): Promise<TTable['$inferSelect'] | null> {
     const result = await this.db.executeQuery('FindById', async (db) => {
-      const records = await db
+      const records = (await db
         .select()
-        .from(this.table)
+        .from(this.table as any)
         .where(where.getSQL())
-        .execute();
+        .execute()) as TTable['$inferSelect'][];
 
       return records[0] ?? null;
     });
@@ -102,7 +98,7 @@ export abstract class MySqlBaseRepository<
     const result = await this.db.executeQuery('Count', async (db) => {
       let query = db
         .select({ count: sql`count(*)` })
-        .from(this.table)
+        .from(this.table as any)
         .$dynamic();
 
       if (where) {
@@ -127,12 +123,11 @@ export abstract class MySqlBaseRepository<
 
   async create(data: TTable['$inferInsert']): Promise<TTable['$inferSelect']> {
     const result = await this.db.executeQuery('Create', async (db) => {
-      await db.insert(this.table).values(data);
-      const records = await db
-        .select()
-        .from(this.table)
-        .where(eq(this.table.id, data.id))
-        .execute();
+      const records = (await db
+        .insert(this.table as any)
+        .values(data)
+        .returning()) as TTable['$inferSelect'][];
+
       return records[0];
     });
 
@@ -143,14 +138,10 @@ export abstract class MySqlBaseRepository<
     data: TTable['$inferInsert'][],
   ): Promise<TTable['$inferSelect'][]> {
     const result = await this.db.executeQuery('CreateMany', async (db) => {
-      await db.insert(this.table).values(data);
-      const ids = data.map((item) => item.id);
-      const records = await db
-        .select()
-        .from(this.table)
-        .where(inArray(this.table.id, ids))
-        .execute();
-      return records;
+      return (await db
+        .insert(this.table as any)
+        .values(data)
+        .returning()) as TTable['$inferSelect'][];
     });
 
     return result;
@@ -161,12 +152,12 @@ export abstract class MySqlBaseRepository<
     data: Partial<TTable['$inferInsert']>,
   ): Promise<TTable['$inferSelect'] | null> {
     const result = await this.db.executeQuery('Update', async (db) => {
-      await db.update(this.table).set(data).where(eq(this.table.id, id));
-      const records = await db
-        .select()
-        .from(this.table)
+      const records = (await db
+        .update(this.table as any)
+        .set(data)
         .where(eq(this.table.id, id))
-        .execute();
+        .returning()) as TTable['$inferSelect'][];
+
       return records[0] ?? null;
     });
 
@@ -177,14 +168,10 @@ export abstract class MySqlBaseRepository<
     data: Partial<TTable['$inferInsert']> & { id: ID }[],
   ): Promise<TTable['$inferSelect'][]> {
     const result = await this.db.executeQuery('UpdateMany', async (db) => {
-      await db.update(this.table).set(data);
-      const ids = data.map((item) => item.id);
-      const records = await db
-        .select()
-        .from(this.table)
-        .where(inArray(this.table.id, ids))
-        .execute();
-      return records;
+      return (await db
+        .update(this.table as any)
+        .set(data)
+        .returning()) as TTable['$inferSelect'][];
     });
 
     return result;
@@ -192,13 +179,13 @@ export abstract class MySqlBaseRepository<
 
   async delete(id: ID): Promise<void> {
     await this.db.executeQuery('Delete', async (db) => {
-      await db.delete(this.table).where(eq(this.table.id, id));
+      await db.delete(this.table as any).where(eq(this.table.id, id));
     });
   }
 
   async deleteMany(ids: ID[]): Promise<void> {
     await this.db.executeQuery('DeleteMany', async (db) => {
-      await db.delete(this.table).where(inArray(this.table.id, ids));
+      await db.delete(this.table as any).where(inArray(this.table.id, ids));
     });
   }
 

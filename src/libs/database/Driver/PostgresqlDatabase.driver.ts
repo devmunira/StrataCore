@@ -34,6 +34,6 @@ export class PostgresDriver implements IDatabaseDriver {
     if (!this.connectionPool) {
       throw new Error('Pool not initialized. Call createPool() first.');
     }
-    return drizzle({ client: this.connectionPool, schema });
+    return drizzle(this.connectionPool, { schema });
   }
 }

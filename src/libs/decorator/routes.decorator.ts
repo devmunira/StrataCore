@@ -26,7 +26,7 @@ export function Routes(
       method,
       middlewares,
       path,
-      propertyKey: propertyKey.toString(),
+      propertyName: propertyKey.toString(),
     });
 
     Reflect.defineMetadata(ROUTE_KEY, routes, target);

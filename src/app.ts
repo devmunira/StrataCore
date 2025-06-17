@@ -1,12 +1,15 @@
 import express from 'express';
-import { registerControllers } from './libs/decorator/auth.decorator';
+import 'reflect-metadata';
+import dotenv from 'dotenv';
+import { UserController } from './user-module/User.controller';
+import { registerControllers } from './libs/decorator/regsiter';
 
 export const createApp = () => {
   const app = express();
   // Middleware
   app.use(express.json());
-
-  registerControllers(app, []);
+  dotenv.config();
+  registerControllers(app, [UserController]);
 
   // Error handling middleware
   app.use(

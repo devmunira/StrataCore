@@ -36,40 +36,8 @@ export const FindOptionsSchema = z
 
 export type FindOptions = z.infer<typeof FindOptionsSchema>;
 
-export interface IPgBaseRepository<
-  TTable extends PgTable & { id: SQLWrapper },
-> {
-  // Queries
-  findAll(options?: FindOptionsSQL): Promise<TTable['$inferSelect'][]>;
-  findById(id: ID): Promise<TTable['$inferSelect'] | null>;
-  findOne(where: SQLWrapper): Promise<TTable['$inferSelect'] | null>;
-  findAndCount(
-    options?: FindOptionsSQL,
-  ): Promise<[TTable['$inferSelect'][], number]>;
-
-  count(where?: SQLWrapper): Promise<number>;
-  checkExists(where: SQLWrapper): Promise<boolean>;
-
-  //  Create
-  create(data: TTable['$inferInsert']): Promise<TTable['$inferSelect']>;
-  createMany(data: TTable['$inferInsert'][]): Promise<TTable['$inferSelect'][]>;
-
-  //  Update
-  update(
-    id: ID,
-    data: Partial<TTable['$inferInsert']>,
-  ): Promise<TTable['$inferSelect'] | null>;
-  updateMany(
-    data: (Partial<TTable['$inferInsert']> & { id: ID })[],
-  ): Promise<TTable['$inferSelect'][]>;
-
-  //  Delete
-  delete(id: ID): Promise<void>;
-  deleteMany(ids: ID[]): Promise<void>;
-}
-
-export interface IMyBaseRepository<
-  TTable extends MySqlTable & { id: SQLWrapper },
+export interface IBaseRepository<
+  TTable extends (PgTable | MySqlTable) & { id: SQLWrapper },
 > {
   // Queries
   findAll(options?: FindOptionsSQL): Promise<TTable['$inferSelect'][]>;

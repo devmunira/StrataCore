@@ -18,7 +18,7 @@ export const userTable = pgTable('users', {
 });
 
 // Create User Table Type
-export const User = typeof userTable.$inferSelect;
+export type User = typeof userTable.$inferSelect;
 
 // Create Create user schema and schema type
 export const CreateUserSchema = createInsertSchema(userTable).omit({

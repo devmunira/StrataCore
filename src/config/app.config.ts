@@ -3,6 +3,9 @@ import {
   DatabaseDriver,
 } from '@/libs/database/IDatabaseClient.interface';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 interface IAppConfig {
   database: DatabaseConfig;
   fileLogger: FileLoggerOptions;

@@ -1,16 +1,26 @@
-import { PostgresDriver } from './libs/database/Driver/PostgresqlDatabase.driver';
-import app from './app';
-import { DatabaseConnectionPool } from './libs/database/DatabaseConnection.config';
-import { MySQLDriver } from './libs/database/Driver/MysqlDatabase.driver';
-import { ConsoleLogger } from './libs/logger/console.logger';
-import { FileLogger } from './libs/logger/file-system.logger';
-import { Logger } from './libs/logger/Logger';
+import { createApp } from './app';
+import { Logger } from './libs/logger/logger';
+import { RegisterDependency } from './db/regsiter.db';
+import http from 'http';
 
-const PORT = process.env.PORT || 4000;
+const port = process.env.PORT || 3000;
+let server: http.Server;
 
-Logger.register(new ConsoleLogger(), new FileLogger());
-new DatabaseConnectionPool().connect();
+async function main() {
+  try {
+    await RegisterDependency();
 
-app.listen(PORT, () => {
-  Logger.info(`Server running on port ${PORT}`);
-});
+    const app = createApp();
+
+    server = http.createServer(app);
+
+    server.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Failed to start the server', error);
+    process.exit(1);
+  }
+}
+
+main();

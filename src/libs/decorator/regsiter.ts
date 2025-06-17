@@ -73,10 +73,12 @@ export function registerControllers(
           route.propertyName,
         ) || [];
 
+      const allMiddlewares = [...route.middlewares, ...middlewares];
+
       const handler = (controllerInstance as any)[route.propertyName].bind(
         controllerInstance,
       );
-      router[route.method](route.path, [...middlewares, handler]);
+      router[route.method](route.path, [...allMiddlewares, handler]);
     });
 
     app.use(controllerMetadata.basePath, router);
