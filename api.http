@@ -1,0 +1,32 @@
+POST http://localhost:4000/api/v1/mysql/users HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Hasan Bhuiyan",
+    "email": "hasan984@gmail.com",
+    "password": "00628342-ab6b-40fc-add1-d609fe90bf5b",
+    "status": "active"
+}
+
+###
+
+GET http://localhost:4000/api/v3/posts HTTP/1.1
+
+###
+
+PUT http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1
+content-type: application/json
+
+{
+    "title": "This is a new title",
+    "content": "This is a new content",
+    "status": "published"
+}
+
+###
+
+GET http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1  
+
+###
+
+DELETE http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1

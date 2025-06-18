@@ -7,6 +7,7 @@ import {
 } from '../interfaces/IBaseRepository';
 import {
   DatabaseConfig,
+  DatabaseDriver,
   IDatabaseClient,
 } from '@/libs/database/IDatabaseClient.interface';
 import { MySqlTable } from 'drizzle-orm/mysql-core';
@@ -17,11 +18,13 @@ export abstract class BaseRepository<
 > implements IBaseRepository<TTable>
 {
   private config: DatabaseConfig = AppConfig.getInstance().database;
-
+  private databaseDriver: DatabaseDriver;
   constructor(
     protected db: IDatabaseClient,
     protected table: TTable,
-  ) {}
+  ) {
+    this.databaseDriver = this.config.driver;
+  }
 
   async findAll(options?: FindOptionsSQL): Promise<TTable['$inferSelect'][]> {
     const result = await this.db.executeQuery('FindAll', async (db) => {
@@ -123,12 +126,26 @@ export abstract class BaseRepository<
 
   async create(data: TTable['$inferInsert']): Promise<TTable['$inferSelect']> {
     const result = await this.db.executeQuery('Create', async (db) => {
-      const records = (await db
-        .insert(this.table as any)
-        .values(data)
-        .returning()) as TTable['$inferSelect'][];
-
-      return records[0];
+      if (this.databaseDriver === DatabaseDriver.POSTGRESQL) {
+        const records = (await db
+          .insert(this.table as any)
+          .values(data)
+          .returning()) as TTable['$inferSelect'][];
+        return records[0];
+      } else {
+        await db.insert(this.table as any).values(data);
+        const insertedId = (data as any).id;
+        if (insertedId) {
+          const records = (await db
+            .select()
+            .from(this.table as any)
+            .where(eq(this.table.id, insertedId))
+            .execute()) as TTable['$inferSelect'][];
+          return records[0];
+        }
+        // If no ID, return the data as-is (not ideal but works for basic cases)
+        return data as TTable['$inferSelect'];
+      }
     });
 
     return result;
@@ -137,14 +154,23 @@ export abstract class BaseRepository<
   async createMany(
     data: TTable['$inferInsert'][],
   ): Promise<TTable['$inferSelect'][]> {
-    const result = await this.db.executeQuery('CreateMany', async (db) => {
-      return (await db
-        .insert(this.table as any)
-        .values(data)
-        .returning()) as TTable['$inferSelect'][];
-    });
+    if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+      const result = await this.db.executeQuery('CreateMany', async (db) => {
+        return (await db
+          .insert(this.table as any)
+          .values(data)
+          .returning()) as TTable['$inferSelect'][];
+      });
 
-    return result;
+      return result;
+    } else {
+      const result = await this.db.executeQuery('CreateMany', async (db) => {
+        await db.insert(this.table as any).values(data);
+        return data as TTable['$inferSelect'][];
+      });
+
+      return result;
+    }
   }
 
   async update(

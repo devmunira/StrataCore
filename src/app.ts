@@ -1,8 +1,14 @@
-import express from 'express';
+import express, {
+  NextFunction,
+  Request,
+  Response,
+  ErrorRequestHandler,
+} from 'express';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-import { UserController } from './user-module/User.controller';
+import { UserController } from './mysql-demo-module/User.controller';
 import { registerControllers } from './libs/decorator/regsiter';
+import { ZodError } from 'zod';
 
 export const createApp = () => {
   const app = express();
@@ -11,18 +17,17 @@ export const createApp = () => {
   dotenv.config();
   registerControllers(app, [UserController]);
 
-  // Error handling middleware
-  app.use(
-    (
-      err: Error,
-      req: express.Request,
-      res: express.Response,
-      next: express.NextFunction,
-    ) => {
-      console.error(err.stack);
-      res.status(500).json({ message: 'Something went wrong!' });
-    },
-  );
+  // Error handling middleware - must be last
+  const errorHandler: ErrorRequestHandler = (
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    res.status(500).json({ message: 'Something went wrong!', err });
+  };
+
+  // app.use(errorHandler);
 
   return app;
 };

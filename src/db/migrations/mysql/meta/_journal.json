@@ -8,6 +8,13 @@
       "when": 1750023528182,
       "tag": "0000_simple_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1750204881025,
+      "tag": "0001_hesitant_mantis",
+      "breakpoints": true
     }
   ]
 }

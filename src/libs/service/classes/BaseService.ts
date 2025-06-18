@@ -40,7 +40,7 @@ export abstract class BaseService<
     return item;
   }
 
-  @TryCatch()
+  // @TryCatch()
   async create(data: TTable['$inferInsert']) {
     const item = await this.repository.create(data);
     return item;
