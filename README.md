@@ -24,10 +24,6 @@ This is a **production-ready Node.js framework** built with TypeScript that impl
 - **Factory Pattern** for database driver creation
 - **Singleton Pattern** for configuration management
 
-### Module Setup Guide
-
-[Check out setup guide](./docs/Setup-Guide.md)
-
 #### 🎨 **Custom Decorators System**
 
 ```typescript
@@ -213,31 +209,7 @@ npm start
 
 ### 1. **Creating a New Module**
 
-```typescript
-// src/modules/product/Product.controller.ts
-import { injectable } from 'tsyringe';
-import { Controller, Get, Post, Guard } from '@/libs/decorator';
-import { ProductService } from './Product.service';
-
-@injectable()
-@Controller('/api/v1/products')
-export class ProductController {
-  constructor(private readonly service: ProductService) {}
-
-  @Get('/')
-  @Guard([AuthGuard])
-  async findAll(req: Request, res: Response) {
-    const products = await this.service.findAll();
-    res.json(products);
-  }
-
-  @Post('/')
-  async create(req: Request, res: Response) {
-    const product = await this.service.create(req.body);
-    res.json(product);
-  }
-}
-```
+[Check out setup guide](./docs/Setup-Guide.md)
 
 ### 2. **Advanced Filtering**
 
@@ -318,46 +290,6 @@ Logger.register(new ConsoleLogger(), new FileLogger());
 Logger.info('User created', { userId: 123, email: 'user@example.com' });
 ```
 
-## 📊 Performance Features
-
-### 1. **Connection Pooling**
-
-- Configurable pool sizes
-- Automatic connection management
-- Health checks and reconnection
-
-### 2. **Query Optimization**
-
-- Prepared statements
-- Parameterized queries
-- SQL injection protection
-
-### 3. **Caching Ready**
-
-- Service layer abstraction
-- Easy cache integration
-- Redis/Memory cache support
-
-## 🔒 Security Features
-
-### 1. **Input Validation**
-
-- Zod schema validation
-- Type-safe request handling
-- SQL injection prevention
-
-### 2. **Error Handling**
-
-- No sensitive data leakage
-- Structured error responses
-- Centralized error management
-
-### 3. **Middleware Security**
-
-- Authentication guards
-- Rate limiting support
-- CORS configuration
-
 ## 🚀 Deployment
 
 ### Docker Deployment
@@ -372,83 +304,8 @@ EXPOSE 4000
 CMD ["npm", "start"]
 ```
 
-### Environment Variables
-
-```bash
-# Production environment
-NODE_ENV=production
-DATABASE_URL=your-production-db-url
-DATABASE_DRIVER=postgresql
-```
-
-## 📈 Scalability Features
-
-### 1. **Modular Architecture**
-
-- Feature-based module organization
-- Loose coupling with DI
-- Easy to extend and maintain
-
-### 2. **Database Scaling**
-
-- Connection pooling
-- Read/write separation ready
-- Migration support
-
-### 3. **Horizontal Scaling**
-
-- Stateless design
-- Session management ready
-- Load balancer friendly
-
-## 🤝 Contributing
-
-### Code Style
-
-- TypeScript strict mode
-- ESLint + Prettier
-- Conventional commits
-
-### Development Workflow
-
-1. Fork the repository
-2. Create feature branch
-3. Implement changes
-4. Add tests
-5. Submit pull request
-
 ## 📄 License
 
 MIT License - see LICENSE file for details
 
-## 🆘 Support
-
-### Common Issues
-
-1. **Database Connection Issues**
-
-   - Check DATABASE_URL format
-   - Verify database is running
-   - Check firewall settings
-
-2. **Migration Issues**
-
-   - Ensure database exists
-   - Check schema compatibility
-   - Verify Drizzle configuration
-
-3. **TypeScript Errors**
-   - Run `npm run build` to check types
-   - Ensure all imports are correct
-   - Check decorator usage
-
-### Getting Help
-
-- Check existing issues
-- Create detailed bug reports
-- Provide reproduction steps
-- Include environment details
-
----
-
-**Built with ❤️ using TypeScript, Express, and Drizzle ORM**
+**Built by Munira with ❤️ and HardWork using TypeScript, Express, and Drizzle ORM**
