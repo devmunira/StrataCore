@@ -4,21 +4,28 @@ import {
   FilterRuleGroup,
   Operators,
 } from '../interfaces/IDatabaseFilterBuilder';
+import { DatabaseDriver } from '@/libs/database/IDatabaseClient.interface';
 
 export class FilterBuilder {
-  static build(filter: FilterRuleGroup): SQLWrapper {
-    return this.processRuleGroup(filter);
+  static build(
+    filter: FilterRuleGroup,
+    driver: DatabaseDriver = DatabaseDriver.MYSQL,
+  ): SQLWrapper {
+    return this.processRuleGroup(filter, driver);
   }
 
   static raw(query: SQLWrapper) {
     return query.getSQL();
   }
 
-  private static processRuleGroup(group: FilterRuleGroup): SQLWrapper {
+  private static processRuleGroup(
+    group: FilterRuleGroup,
+    driver: DatabaseDriver,
+  ): SQLWrapper {
     const conditions = group.rules.map((rule) =>
       this.isRuleGroup(rule)
-        ? this.processRuleGroup(rule)
-        : this.processRule(rule),
+        ? this.processRuleGroup(rule, driver)
+        : this.processRule(rule, driver),
     );
 
     if (conditions.length === 0) {
@@ -32,8 +39,12 @@ export class FilterBuilder {
     return group.not ? not(result) : result;
   }
 
-  private static processRule(rule: FilterRule): SQLWrapper {
+  private static processRule(
+    rule: FilterRule,
+    driver: DatabaseDriver,
+  ): SQLWrapper {
     const column = sql.identifier(rule.field);
+    const isPostgreSQL = driver === DatabaseDriver.POSTGRESQL;
 
     switch (rule.operator) {
       case Operators.EQUALS:
@@ -55,16 +66,24 @@ export class FilterBuilder {
         return sql`${column} <= ${rule.value}`;
 
       case Operators.CONTAINS:
-        return sql`${column} ILIKE %${rule.value}%`;
+        return isPostgreSQL
+          ? sql`${column} ILIKE ${'%' + rule.value + '%'}`
+          : sql`${column} LIKE ${'%' + rule.value + '%'}`;
 
       case Operators.NOT_CONTAINS:
-        return sql`${column} NOT ILIKE %${rule.value}%`;
+        return isPostgreSQL
+          ? sql`${column} NOT ILIKE ${'%' + rule.value + '%'}`
+          : sql`${column} NOT LIKE ${'%' + rule.value + '%'}`;
 
       case Operators.STARTS_WITH:
-        return sql`${column} ILIKE ${rule.value}%`;
+        return isPostgreSQL
+          ? sql`${column} ILIKE ${rule.value + '%'}`
+          : sql`${column} LIKE ${rule.value + '%'}`;
 
       case Operators.ENDS_WITH:
-        return sql`${column} ILIKE %${rule.value}`;
+        return isPostgreSQL
+          ? sql`${column} ILIKE ${'%' + rule.value}`
+          : sql`${column} LIKE ${'%' + rule.value}`;
 
       case Operators.LIKE:
         return sql`${column} LIKE ${rule.value}`;

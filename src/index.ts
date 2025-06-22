@@ -9,7 +9,6 @@ let server: http.Server;
 async function main() {
   try {
     await RegisterDependency();
-
     const app = createApp();
 
     server = http.createServer(app);

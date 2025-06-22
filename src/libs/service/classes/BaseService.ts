@@ -10,17 +10,21 @@ import {
 import { SQLWrapper } from 'drizzle-orm';
 import { MySqlTable } from 'drizzle-orm/mysql-core';
 import { PgColumn, PgTable, TableConfig } from 'drizzle-orm/pg-core';
+import { DatabaseDriver } from '@/libs/database/IDatabaseClient.interface';
+import { AppConfig } from '@/config/app.config';
 
 export abstract class BaseService<
   TTable extends (PgTable | MySqlTable) & { id: SQLWrapper },
   TRepository extends BaseRepository<TTable> = BaseRepository<TTable>,
 > {
+  private config = AppConfig.getInstance().database;
+
   constructor(protected readonly repository: TRepository) {}
 
   @TryCatch()
   async findAll(options?: FindOptions) {
     const filter = options?.where
-      ? FilterBuilder.build(options?.where)
+      ? FilterBuilder.build(options?.where, this.config.driver)
       : undefined;
 
     return await this.repository.findAll({
@@ -40,14 +44,22 @@ export abstract class BaseService<
     return item;
   }
 
-  // @TryCatch()
+  @TryCatch()
   async create(data: TTable['$inferInsert']) {
-    const item = await this.repository.create(data);
-    return item;
+    try {
+      const item = await this.repository.create(data);
+      return item;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  @TryCatch()
+  // @TryCatch()
   async update(id: ID, data: Partial<TTable['$inferInsert']>) {
+    const findData = await this.repository.findById(id);
+    if (!findData) {
+      throw new Error('Item not found');
+    }
     const item = await this.repository.update(id, data);
     if (!item) {
       throw new Error('Item not found');
@@ -58,6 +70,11 @@ export abstract class BaseService<
 
   @TryCatch()
   async delete(id: ID) {
+    const findData = await this.repository.findById(id);
+    if (!findData) {
+      throw new Error('Item not found');
+    }
+
     await this.repository.delete(id);
   }
 

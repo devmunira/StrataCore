@@ -24,18 +24,15 @@ export class UserController {
     res.json(users);
   }
 
-  @Get('/:id')
-  async findById(req: Request, res: Response) {
-    const user = await this.service.findById(req.params.id);
-    res.json(user);
-  }
-
   @Get('/search')
   async search(req: Request, res: Response) {
-    const { query = '' } = req.query;
-    const where: FilterRuleGroup = {
-      combinator: 'or',
-      rules: [
+    const { query = '', ...searchParams } = req.query;
+
+    const queryArray: (FilterRule | FilterRuleGroup)[] = [];
+
+    // Add search from the 'query' parameter
+    if (query && typeof query === 'string') {
+      queryArray.push(
         {
           field: 'name',
           operator: 'contains',
@@ -51,11 +48,43 @@ export class UserController {
           operator: '=',
           value: query,
         },
-      ],
+      );
+    }
+
+    // Add search from other parameters
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (value && typeof value === 'string') {
+        // Map frontend field names to actual database column names
+        const fieldMap: Record<string, string> = {
+          status: 'users_status',
+          roles: 'users_roles',
+        };
+
+        const dbField = fieldMap[key] || key;
+
+        queryArray.push({
+          field: dbField,
+          operator: 'contains',
+          value: value,
+        });
+      }
+    });
+
+    const where: FilterRuleGroup = {
+      combinator: 'or',
+      rules: queryArray,
     };
+
+    console.log({ query: req.query, where: where.rules });
 
     const users = await this.service.findAll({ where });
     res.json(users);
+  }
+
+  @Get('/:id')
+  async findById(req: Request, res: Response) {
+    const user = await this.service.findById(req.params.id);
+    res.json(user);
   }
 
   @Post('/')

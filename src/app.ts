@@ -7,6 +7,7 @@ import express, {
 import 'reflect-metadata';
 import dotenv from 'dotenv';
 import { UserController } from './mysql-demo-module/User.controller';
+import { UserController as PostgresUserController } from './postgres-demo-module/User.controller';
 import { registerControllers } from './libs/decorator/regsiter';
 import { ZodError } from 'zod';
 
@@ -15,7 +16,7 @@ export const createApp = () => {
   // Middleware
   app.use(express.json());
   dotenv.config();
-  registerControllers(app, [UserController]);
+  registerControllers(app, [UserController, PostgresUserController]);
 
   // Error handling middleware - must be last
   const errorHandler: ErrorRequestHandler = (
@@ -24,10 +25,13 @@ export const createApp = () => {
     res: Response,
     next: NextFunction,
   ) => {
-    res.status(500).json({ message: 'Something went wrong!', err });
+    res.status(err?.status || 500).json({
+      message: err?.message || 'Something went wrong!',
+      errors: err,
+    });
   };
 
-  // app.use(errorHandler);
+  app.use(errorHandler);
 
   return app;
 };

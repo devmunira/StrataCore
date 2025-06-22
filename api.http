@@ -1,32 +1,76 @@
+### Create a new user
 POST http://localhost:4000/api/v1/mysql/users HTTP/1.1
-content-type: application/json
+Content-Type: application/json
 
 {
-    "name": "Hasan Bhuiyan",
-    "email": "hasan984@gmail.com",
-    "password": "00628342-ab6b-40fc-add1-d609fe90bf5b",
+    "name": "Jane Doe 2",
+    "email": "jane.doe2@example.com",
+    "roles": "admin",
     "status": "active"
 }
 
-###
+### Get all users
+GET http://localhost:4000/api/v1/mysql/users HTTP/1.1
 
-GET http://localhost:4000/api/v3/posts HTTP/1.1
+### Get a user by ID
+# Replace '1' with an actual user ID
+GET http://localhost:4000/api/v1/mysql/users/1 HTTP/1.1
 
-###
-
-PUT http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1
-content-type: application/json
+### Update a user
+# Replace '1' with an actual user ID
+PUT http://localhost:4000/api/v1/mysql/users/20 HTTP/1.1
+Content-Type: application/json
 
 {
-    "title": "This is a new title",
-    "content": "This is a new content",
-    "status": "published"
+    "name": "Jane Doe",
+    "status": "inactive"
 }
 
+### Delete a user
+# Replace '1' with an actual user ID
+DELETE http://localhost:4000/api/v1/mysql/users/45 HTTP/1.1
+
+### Search for users
+# Searches in name, email, and id fields
+GET http://localhost:4000/api/v1/mysql/users/search?name=Hasan&email=munira@gmail.com HTTP/1.1
+
+
+
+##PostGresql
+
+### Create a new user
+POST http://localhost:4000/api/v1/postgres/users HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Jane Doe 2",
+    "email": "jane.doe2@example.com",
+    "password": "200720"
+}
+
+### Get all users
+GET http://localhost:4000/api/v1/postgres/users HTTP/1.1
+
+### Get a user by ID
+# Replace '1' with an actual user ID
+GET http://localhost:4000/api/v1/postgres/users/487e70d5-dbfa-4d1a-9150-062ef3c92f86 HTTP/1.1
+
+### Update a user
+# Replace '1' with an actual user ID
+PUT http://localhost:4000/api/v1/postgres/users/487e70d5-dbfa-4d1a-9150-062ef3c92f86 HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Jane Doe",
+    "status": "inactive"
+}
+
+### Delete a user
+# Replace '1' with an actual user ID
+DELETE http://localhost:4000/api/v1/postgres/users/487e70d5-dbfa-4d1a-9150-062ef3c92f86 HTTP/1.1
+
+### Search for users
+# Searches in name, email, and id fields
+GET http://localhost:4000/api/v1/postgres/users/search?name=Hasan HTTP/1.1
+
 ###
-
-GET http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1  
-
-###
-
-DELETE http://localhost:4000/api/v3/posts/adf1f289-866c-4c47-9fc8-718f07c1e0ef HTTP/1.1

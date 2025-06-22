@@ -143,7 +143,6 @@ export abstract class BaseRepository<
             .execute()) as TTable['$inferSelect'][];
           return records[0];
         }
-        // If no ID, return the data as-is (not ideal but works for basic cases)
         return data as TTable['$inferSelect'];
       }
     });
@@ -177,17 +176,29 @@ export abstract class BaseRepository<
     id: ID,
     data: Partial<TTable['$inferInsert']>,
   ): Promise<TTable['$inferSelect'] | null> {
-    const result = await this.db.executeQuery('Update', async (db) => {
-      const records = (await db
-        .update(this.table as any)
-        .set(data)
-        .where(eq(this.table.id, id))
-        .returning()) as TTable['$inferSelect'][];
+    if (this.config.driver === DatabaseDriver.POSTGRESQL) {
+      const result = await this.db.executeQuery('Update', async (db) => {
+        const records = (await db
+          .update(this.table as any)
+          .set(data)
+          .where(eq(this.table.id, id))
+          .returning()) as TTable['$inferSelect'][];
 
-      return records[0] ?? null;
-    });
+        return records[0] ?? null;
+      });
 
-    return result;
+      return result;
+    } else {
+      const result = await this.db.executeQuery('Update', async (db) => {
+        await db
+          .update(this.table as any)
+          .set(data)
+          .where(eq(this.table.id, id));
+        return data as TTable['$inferSelect'][];
+      });
+
+      return result;
+    }
   }
 
   async updateMany(
